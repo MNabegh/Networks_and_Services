@@ -1,5 +1,6 @@
 from lxml import etree
 import xml.etree.ElementTree as ET
+from io import BytesIO
 
 # create XML 
 root = etree.Element('methodCall')
@@ -25,10 +26,18 @@ root.append(params)
 
 
 # pretty string
-s = etree.tostring(root, pretty_print=True)
-print s
+#s = etree.tostring(root, pretty_print=True)
+#print s
 
+xmlstr = ET.tostring(root, encoding='us-ascii', method='xml')
+print(xmlstr)
 
-tree = ET.parse(s)
+root1= ET.fromstring(xmlstr)
 
-print firstParam.tag, firstParam.text
+name= root1[0].text
+first= root1[1][0].text
+second= root1[1][1].text
+print(name)
+print(first)
+print(second)
+
