@@ -19,41 +19,43 @@ def Diff(first,second):
 class RequestHandler(BaseHTTPRequestHandler):  
 
 	def do_POST(self):
-		print(self.path)
-		# print(self.rfile.read())
+
+		# Recieve message, remove headers and extract xml body
 		length = int(self.headers['Content-length'])
 		self.send_response(200, "OK")
 		self.end_headers()
 		xmlstr= self.rfile.read(length)
-		print(xmlstr) 
+
+		# change xml message to DOM tree, extract the method name and the operands from it	
 		root1= ET.fromstring(xmlstr)
-		name= root1[0].text
-		first= root1[1][0].text
-		second= root1[1][1].text
 
-		if name == "Sum":
-			result = Sum(int(first),int(second))
-			#result = int(first)+int(second)
+		methodName= root1[0].text
+		firstOperand= root1[1][0].text
+		secondOperand= root1[1][1].text
+
+
+
+		# Determine which method to perform, perform it and save the result
+		if methodName == "Sum":
+			result = Sum(int(firstOperand),int(secondOperand))
+			
 		else:
-			result = Diff(int(first), int(second))
-			#result = int(first)-int(second)
+			result = Diff(int(firstOperand), int(secondOperand))
+			
 
-		print (result)
+		
 
-		# Form response tree
-		rootR = etree.Element('methodResponse')
+		# Form response DOM tree and change it to xml message
+		rootResponse = etree.Element('methodResponse')
+		paramsResponse = etree.Element('params')
+		resultValue = etree.Element('result')
+		resultValue.text = str(result);
+		paramsResponse.append(resultValue)
+		rootResponse.append(paramsResponse)
+		xmlstrResponse = ET.tostring(rootResponse, encoding='us-ascii', method='xml')
 
-		paramsR = etree.Element('params')
-
-		resultN = etree.Element('result')
-		resultN.text = str(result);
-		paramsR.append(resultN)
-
-		rootR.append(paramsR)
-		xmlstrR = ET.tostring(rootR, encoding='us-ascii', method='xml')
-
-		print(xmlstrR)
-		self.wfile.write(xmlstrR)
+		#send the xml message as an http response
+		self.wfile.write(xmlstrResponse)
 
 
 
